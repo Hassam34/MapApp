@@ -1,8 +1,13 @@
 import React, { Component } from 'React';
-import { View, Text, TouchableOpacity, TextInput, Dimensions, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Dimensions, ScrollView, Modal } from 'react-native'
 import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import { Fonts } from '../utilts/Fonts'
+import Icon from 'react-native-vector-icons/Feather'
+import Icon2 from 'react-native-vector-icons/Fontisto'
+
+const HEIGHT = Math.round(Dimensions.get('window').height)
+const WIDTH = Math.round(Dimensions.get('window').width); a = 2;
 
 const markerArray = [
     {
@@ -17,7 +22,6 @@ const markerArray = [
     }
 ]
 
-const WIDTH = Math.round(Dimensions.get('window').width); a = 2;
 
 class Welcome extends Component {
 
@@ -31,7 +35,10 @@ class Welcome extends Component {
         this.state = {
             latitude: 0,
             longitude: 0,
-            error: null
+            error: null,
+            modalOK: null,
+            modalValue: {},
+            editModal: null
         }
     }
     componentDidMount() {
@@ -56,36 +63,133 @@ class Welcome extends Component {
         })
     }
     renderMarkerArray() {
-        console.log('longitude: ', this.addmarker.longitude, ' and latitude : ', this.addmarker.longitude, '\n and name : ', this.addmarker.locName)
+        bool = false
         if (!(this.addmarker.longitude == null || this.addmarker.longitude == null || this.addmarker.locName == null)) {
-            markerArray.push({
-                longitude: this.addmarker.longitude,
-                latitude: this.addmarker.latitude,
-                locName: this.addmarker.locName
+            markerArray.forEach(element => {
+                if (parseFloat(element.longitude) == this.addmarker.longitude && parseFloat(element.latitude) == this.addmarker.latitude) {
+                    bool = true;
+                }
+            });
+
+            if (bool == false) {
+                markerArray.push({
+                    longitude: this.addmarker.longitude,
+                    latitude: this.addmarker.latitude,
+                    locName: this.addmarker.locName
+                }
+                ), this.componentDidMount()
             }
-            ), this.componentDidMount()
-            
+            else {
+                alert('You already have added these Marker in these cordinate')
+            }
         }
         else {
             alert('Please enter correct data')
-            
+
         }
-        // a=1
-        // for(i=0; i<=markerArray.length ; i++){
-        //     console.log(i)
-        //     console.log('hi',markerArray[i])
-        //     if(markerArray[i].longitude==this.addmarker.longitude && markerArray[i].latitude==this.addmarker.latitude){
-        //         a=2;
-        //         console.log('hi i am here',markerArray[i])
-        //         break;
-        //     }
-        // }
-        // if(a==1){
 
-        // }else(
-        //     alert('You already add Marker in this position')
-        // )
+    }
+    showModal = () => {
+        
+        const item = this.state.modalValue
+        console.log('in modal: ', item.locName, ' status: ', this.state.modalOK)
 
+        return (
+            <Modal transparent={true} visible={this.state.modalOK}>
+                <View style={{ flex: 1, marginTop: 100, marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#EEF4F9', borderRadius: 5 }}>
+                    <TouchableOpacity style={{ alignSelf: 'flex-end', marginRight: 10, marginTop: 10 }} onPress={() => (this.setState({ modalOK:false, editModal:false  }), this.componentDidMount())}>
+                        <Icon2 name='close' color="#007aff" size={25} />
+                    </TouchableOpacity>
+                    <View>
+                        <View style={{marginTop:30,flexDirection:'row'}}>
+                            <View style={{justifyContent:'center'}}>
+                                <Text style={{ marginLeft: 10, fontFamily: Fonts.BurlingameProSemiBold, fontSize: 18, }}>
+                                    Location : 
+                                </Text>
+                                <Text style={{marginTop:30, marginLeft: 10, fontFamily: Fonts.BurlingameProSemiBold, fontSize: 18, }}>
+                                    Latitude : 
+                                </Text>
+                                <Text style={{marginTop:30, marginLeft: 10, fontFamily: Fonts.BurlingameProSemiBold, fontSize: 18, }}>
+                                   Longitude : 
+                                </Text>
+                            </View>
+                            <View style={{marginLeft:20}}>
+                                {this.state.editModal
+                                    ?
+                                    <TextInput
+                                        //keyboardType='decimal-pad'
+                                        placeholder='Enter location Name'
+                                        placeholderTextColor={'gray'}
+                                        underlineColorAndroid='transparent'
+                                        style={styles. inputStyleEdit}
+                                        value={item.locName}
+                                        onChangeText={text => this.item.locName = parseFloat(text)}
+                                    />
+                                    :
+                                    <Text style={{ marginLeft: 5, fontFamily: Fonts.BurlingameProRegular, fontSize: 18 }}>
+                                        {item.locName}
+                                    </Text>
+                                }
+                                {this.state.editModal
+                                    ?
+                                    <TextInput
+                                        keyboardType='decimal-pad'
+                                        placeholder='Enter Latitude'
+                                        placeholderTextColor={'gray'}
+                                        underlineColorAndroid='transparent'
+                                        style={[styles.inputStyleEdit,{ marginTop:10}]}
+                                        value={item.latitude}
+                                        onChangeText={text => this.item.latitude = parseFloat(text)}
+                                    />
+                                    :
+                                    <Text style={{marginTop:30, marginLeft: 5, fontFamily: Fonts.BurlingameProRegular, fontSize: 18 }}>
+                                        {item.latitude}
+                                    </Text>
+                                }
+                                {this.state.editModal
+                                    ?
+                                    <TextInput
+                                        keyboardType='decimal-pad'
+                                        placeholder='Enter Longitude'
+                                        placeholderTextColor={'gray'}
+                                        underlineColorAndroid='transparent'
+                                        style={[styles.inputStyleEdit,{ marginTop:10}]}
+                                        value={item.longitude}
+                                        onChangeText={text => this.item.longitude = parseFloat(text)}
+                                    />
+                                    :
+                                    <Text style={{marginTop:30, marginLeft: 5, fontFamily: Fonts.BurlingameProRegular, fontSize: 18 }}>
+                                        {item.longitude}
+                                    </Text>
+                                }
+                            </View>
+                        </View>
+                        <View style={{marginTop:40}}>
+
+                        {this.state.editModal
+                                    ?
+                                    <TouchableOpacity style={{ alignSelf: 'center' }} onPress={()=> (this.setState({editModal:false}), this.componentDidMount())}>
+                                <View style={{ marginTop: 5, backgroundColor: '#007aff', alignSelf: 'flex-end', borderRadius: 3 }}>
+                                    <Text style={{ marginLeft: 10, marginRight: 10, fontSize: 25, color: 'white' }}>
+                                        Update Cordinates
+                                </Text>
+                                </View>
+                            </TouchableOpacity>
+                                    :
+                                    <TouchableOpacity style={{ alignSelf: 'center' }} onPress={()=> (this.setState({editModal:true}),this.componentDidMount())}>
+                                <View style={{ marginTop: 5, backgroundColor: '#007aff', alignSelf: 'flex-end', borderRadius: 3 }}>
+                                    <Text style={{ marginLeft: 10, marginRight: 10, fontSize: 25, color: 'white' }}>
+                                        Edit Cordinates
+                                </Text>
+                                </View>
+                            </TouchableOpacity>
+                                }
+                        
+                        </View>
+
+                    </View>
+                </View>
+            </Modal>)
     }
     showMarker() {
         return (
@@ -99,24 +203,29 @@ class Welcome extends Component {
                 {markerArray.map((item, index) => (
                     <TouchableOpacity key={`marker-${index}`} onPress={() => { this.handleItem(item.latitude, item.longitude) }}>
                         <View style={styles.showMarkerStyle}>
-                            <View style={{ flex: .7, justifyContent: 'center', marginleft: 15, borderRightWidth:  0.3, borderColor: 'gray',shadowOpacity: 2, }}>
+                            <View style={{ flex: .7, justifyContent: 'center', marginleft: 15, borderRightWidth: 0.3, borderColor: 'gray', shadowOpacity: 2, }}>
                                 <Text style={{ fontFamily: Fonts.BurlingameProRegular, fontSize: 18, alignSelf: 'center', color: 'gray' }}>ID : {index}</Text>
                             </View>
-                            <View style={{ flex: 3, flexDirection:'row', marginTop:5 }}>
-                                <Text style={{marginLeft:10, fontFamily: Fonts.BurlingameProSemiBold, fontSize: 18 ,  }}>
+                            <View style={{ flex: 3, flexDirection: 'row', marginTop: 5 }}>
+                                <Text style={{ marginLeft: 10, fontFamily: Fonts.BurlingameProSemiBold, fontSize: 18, }}>
                                     Latitude: {'\n'}
                                     Longitude:
                                 </Text>
-                                <Text style={{marginLeft:5, fontFamily: Fonts.BurlingameProRegular, fontSize: 18 }}>
-                                     {item.latitude} {'\n'}
-                                     {item.longitude}
+                                <Text style={{ marginLeft: 5, fontFamily: Fonts.BurlingameProRegular, fontSize: 18 }}>
+                                    {item.latitude} {'\n'}
+                                    {item.longitude}
                                 </Text>
                             </View>
-                            <View style={{alignSelf:'flex-end'}}>
-                                <Text style={{fontFamily:Fonts.BurlingameProSemiBold, fontSize:10, color:'gray'}}>
+                            <View style={{ alignSelf: 'flex-end' }}>
+                                <Text style={{ fontFamily: Fonts.BurlingameProSemiBold, fontSize: 10, color: 'gray' }}>
                                     {item.locName}
                                 </Text>
                             </View>
+                            <TouchableOpacity style={{ justifyContent: 'center' }} onPress={() => (this.setState({ modalOK: true, modalValue: item }))}>
+                                <View style={{ alignSelf: 'flex-end' }} >
+                                    <Icon name='more-vertical' color='gray' size={30} />
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
 
@@ -153,12 +262,14 @@ class Welcome extends Component {
                     <View style={{ flexDirection: 'column' }}>
                         <View style={{ flexDirection: 'row' }} >
                             <TextInput
+                                keyboardType='decimal-pad'
                                 placeholder='Enter Latitude'
                                 placeholderTextColor={'gray'}
                                 underlineColorAndroid='transparent'
                                 style={styles.inputStyle}
                                 onChangeText={text => this.addmarker.latitude = parseFloat(text)} />
                             <TextInput
+                                keyboardType='decimal-pad'
                                 placeholder='Enter Longitude'
                                 placeholderTextColor={'gray'}
                                 underlineColorAndroid='transparent'
@@ -184,10 +295,11 @@ class Welcome extends Component {
                     </View>
                     <View>
                         <View style={{ marginTop: 10, alignSelf: 'center', borderRadius: 3, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 15, color:'#E51C24' }}>YOUR MARKERS</Text>
+                            <Text style={{ fontSize: 15, color: '#E51C24' }}>YOUR MARKERS</Text>
                         </View>
 
                         {this.showMarker()}
+                        {this.showModal()}
                     </View>
                 </View>
             </View>
@@ -249,6 +361,20 @@ const styles = {
         // marginLeft:10,
         // marginRight:10
         //marginHorizontal: 25
+    },
+    inputStyleEdit:{
+       // marginTop: 10,
+        paddingLeft: 10,
+        width: WIDTH - 200,
+        height: 40,
+        fontSize: 15,
+        backgroundColor: 'rgba(0,0,0,0.02)',
+        color: 'black',
+        borderColor: 'gray',
+        shadowOpacity: 2,
+        borderRadius: 3,
+        borderWidth: 0.3,
+        marginHorizontal: 10
     }
 }
 
